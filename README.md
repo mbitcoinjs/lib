@@ -4,7 +4,7 @@ mbitcoinjs-lib
  - Extensions to bitcoinjs-lib for multi-signature, data/memo outputs, brainwallet passphrases, JSON import/export
  - v0.0.1, early beta, inherits bitcoinjs-lib license
 
-mbitcoinjs-lib is an addon to the bitcoinjs-lib bitcoin/crypto javascript library.  The .js files can be included after bitcoinjs-min.js in a project's HTML file to make the extended functionality available.  mbitcoinjs-lib is designed to not interfere with any pre-existing code that calls into bitcoinjs-lib.
+mbitcoinjs-lib extends the bitcoinjs-lib bitcoin/crypto javascript library; it is designed to provide its extended functions without interfering with any pre-existing code that calls into bitcoinjs-lib.
 
 
 <h3>Overview</h3>
