@@ -3,14 +3,11 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Lib by mbitcoinjs</title>
+    <title>mbitcoinjs-lib</title>
 
     <link rel="stylesheet" href="stylesheets/styles.css">
     <link rel="stylesheet" href="stylesheets/pygment_trac.css">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
   </head>
   <body>
     <div class="wrapper">
@@ -36,9 +33,9 @@
 
 <p>Additions to <code>Bitcoin.Wallet</code>, <code>Bitcoin.Transaction</code>, <code>Bitcoin.Script</code> namespaces to support multi-signature and data/memo outputs.</p>
 
-<p> &nbsp; Creates transactions containing multisig (M of N) and data outputs ("OP_RESERVED &lt;80 bytes&gt;").</p>
+<p> &nbsp; &nbsp; - Creates transactions containing multisig (M of N) and data outputs ("OP_RESERVED &lt;80 bytes&gt;").</p>
 
-<p> &nbsp; Recognizes multisig as spendable if the required M addresses are in the wallet, signs/spends with M keys.</p>
+<p> &nbsp; &nbsp; - Recognizes multisig as spendable if the required M addresses are in the wallet, signs/spends with M keys.</p>
 
 
 <p>Additions to <code>Bitcoin.Address</code> namespace for brainwallet passphrase support, also vanity address miner.</p>
