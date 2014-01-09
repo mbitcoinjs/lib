@@ -15,7 +15,7 @@
   <body>
     <div class="wrapper">
       <header>
-        <h1>Lib</h1>
+        <h1>mbitcoinjs-lib</h1>
         <p>Extensions to bitcoinjs-lib for multi-signature, memo/data outputs, brainwallet passphrases, JSON import/export, etc,. v0.0.1 early beta.</p>
 
         <p class="view"><a href="https://github.com/mbitcoinjs/lib">View the Project on GitHub <small>mbitcoinjs/lib</small></a></p>
@@ -31,17 +31,17 @@
         <h1>
 <a name="mbitcoinjs-lib" class="anchor" href="#mbitcoinjs-lib"><span class="octicon octicon-link"></span></a>mbitcoinjs-lib</h1>
 
-<p>mbitcoinjs-lib is a library of extensions to the bitcoinjs-lib bitcoin/crypto javascript library; it is designed to provide extended functionality without interfering with any pre-existing code that calls into bitcoinjs-lib.</p>
+<p>mbitcoinjs-lib provides some extensions to the bitcoinjs-lib bitcoin/crypto javascript library; it is designed to provide extended functionality without interfering with any pre-existing code that calls into bitcoinjs-lib.</p>
 
 <h3>
 <a name="overview" class="anchor" href="#overview"><span class="octicon octicon-link"></span></a>Overview</h3>
 
 <p>Additions to <code>Bitcoin.Wallet</code>, <code>Bitcoin.Transaction</code>, <code>Bitcoin.Script</code> namespaces to support multi-signature and data/memo outputs.</p>
 
-<pre><code>Creates transactions containing multisig (M of N) and data outputs ("OP_RESERVED &lt;80 bytes&gt;").
+<p> &nbsp; Creates transactions containing multisig (M of N) and data outputs ("OP_RESERVED &lt;80 bytes&gt;").</p>
 
-Recognizes multisig as spendable if the required M addresses are in the wallet, signs/spends with M keys. 
-</code></pre>
+<p> &nbsp; Recognizes multisig as spendable if the required M addresses are in the wallet, signs/spends with M keys.</p>
+
 
 <p>Additions to <code>Bitcoin.Address</code> namespace for brainwallet passphrase support, also vanity address miner.</p>
 
