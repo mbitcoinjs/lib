@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Lib by mbitcoinjs</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Lib</h1>
+        <p>Extensions to bitcoinjs-lib for multi-signature, memo/data outputs, brainwallet passphrases, JSON import/export, etc,. v0.0.1 early beta.</p>
+
+        <p class="view"><a href="https://github.com/mbitcoinjs/lib">View the Project on GitHub <small>mbitcoinjs/lib</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/mbitcoinjs/lib/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/mbitcoinjs/lib/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/mbitcoinjs/lib">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a name="mbitcoinjs-lib" class="anchor" href="#mbitcoinjs-lib"><span class="octicon octicon-link"></span></a>mbitcoinjs-lib</h1>
+
+<p>mbitcoinjs-lib is a library of extensions to the bitcoinjs-lib bitcoin/crypto javascript library; it is designed to provide extended functionality without interfering with any pre-existing code that calls into bitcoinjs-lib.</p>
+
+<h3>
+<a name="overview" class="anchor" href="#overview"><span class="octicon octicon-link"></span></a>Overview</h3>
+
+<p>Additions to <code>Bitcoin.Wallet</code>, <code>Bitcoin.Transaction</code>, <code>Bitcoin.Script</code> namespaces to support multi-signature and data/memo outputs.</p>
+
+<pre><code>Creates transactions containing multisig (M of N) and data outputs ("OP_RESERVED &lt;80 bytes&gt;").
+
+Recognizes multisig as spendable if the required M addresses are in the wallet, signs/spends with M keys. 
+</code></pre>
+
+<p>Additions to <code>Bitcoin.Address</code> namespace for brainwallet passphrase support, also vanity address miner.</p>
+
+<p>New namespace <code>Bitcoin.ImpExp</code> for importing/exporting data in BBE/BCI JSON text formats to/from wallets.</p>
+
+<h3>
+<a name="some-primary-functions-doc-in-source" class="anchor" href="#some-primary-functions-doc-in-source"><span class="octicon octicon-link"></span></a>Some primary functions (doc in source)</h3>
+
+<ul>
+<li><p><code>Bitcoin.Wallet.createSend2()</code>: new version of createSend with multisig and data output support, also supports multiple outputs and async mode.</p></li>
+<li><p><code>Bitcoin.Wallet.selectOutputs()</code>: determines which spendables will be redeemed for a pending spend transaction and calcs helpful stats.</p></li>
+<li><p><code>Bitcoin.Wallet.queryOutputs()</code>: searches an output dataset.</p></li>
+<li><p><code>Bitcoin.Address.fromPrivOrPass()</code>: resolves a private key or brainwallet passphrase into address/pubkey/etc data structure, also makes random passphrases from user supplied or rfc1751 dictionary.</p></li>
+<li><p><code>Bitcoin.ImpExp.BBE.import()</code>: imports BBE/BCI JSON text data into a wallet.</p></li>
+<li><p><code>Bitcoin.ImpExp.BBE.export()</code>: exports wallet to BBE text.</p></li>
+</ul><h3>
+<a name="some-projects-that-use-mbitcoinjs-lib" class="anchor" href="#some-projects-that-use-mbitcoinjs-lib"><span class="octicon octicon-link"></span></a>Some projects that use mbitcoinjs-lib</h3>
+
+<p>ThoughtWallet: <a href="http://thoughtwallet.github.io/wallet"></a><a href="http://thoughtwallet.github.io/wallet">http://thoughtwallet.github.io/wallet</a></p>
+
+<p>Rarebit client: <a href="http://rarebit.github.io/project/client/min"></a><a href="http://rarebit.github.io/project/client/min">http://rarebit.github.io/project/client/min</a></p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/mbitcoinjs">mbitcoinjs</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
