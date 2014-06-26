@@ -15,8 +15,8 @@ mbitcoinjs-lib extends the bitcoinjs-lib bitcoin/crypto javascript library; it i
 - New namespace <code>Bitcoin.ImpExp</code> for importing/exporting data in BBE/BCI JSON text formats to/from wallets (code adapted from <a href="http://brainwallet.org">brainwallet.org</a>).
 
 
-<h3>IMPORTANT: Current bitcoin client will not allow the throwaway opcode in a multisig redemption to be anything other than OP_0.
+<h5>IMPORTANT: Current bitcoin client will not allow the throwaway opcode in a multisig redemption to be anything other than OP_0.
 This older code is using OP RESERVED, so the effected code in mbitcoinjs.js should be edited (minor change).  
-In addition, the correct opcode for data/memo outs is OP_RETURN with a 40 byte maximum.</h3>
+In addition, the correct opcode for data/memo outs is OP_RETURN with a 40 byte maximum.</h5>
 
 <h3>Doc in source</h3>
