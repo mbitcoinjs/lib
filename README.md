@@ -6,38 +6,17 @@ mbitcoinjs-lib
 
 mbitcoinjs-lib extends the bitcoinjs-lib bitcoin/crypto javascript library; it is designed to provide its extended functions without interfering with any pre-existing code that calls into bitcoinjs-lib.
 
+- Creates transactions with multisig and data/memo outputs
 
-<h3>Overview</h3>
-
-  Additions to <code>Bitcoin.Wallet</code>, <code>Bitcoin.Transaction</code>, <code>Bitcoin.Script</code> namespaces to support multi-signature and data/memo outputs.
-  
-    Creates transactions containing multisig (M of N) and data outputs ("OP_RESERVED <80 bytes>").
-
-    Recognizes multisig as spendable if the required M addresses are in the wallet, signs/spends with M keys. 
+- Recognizes multisig as spendable if the required M addresses are in the wallet, signs/spends with M keys. 
     
-  Additions to <code>Bitcoin.Address</code> namespace for brainwallet passphrase support, also vanity address miner.
+- Additions to <code>Bitcoin.Address</code> namespace for brainwallet passphrase support, also vanity address miner.
 
-  New namespace <code>Bitcoin.ImpExp</code> for importing/exporting data in BBE/BCI JSON text formats to/from wallets (code adapted from <a href="http://brainwallet.org">brainwallet.org</a>).
-
-
-
-<h3>Some primary functions (doc in source)</h3>
-
- - <code>Bitcoin.Wallet.createSend2()</code>: new version of createSend with multisig and data output support, also supports multiple outputs and async mode.
-
- - <code>Bitcoin.Wallet.selectOutputs()</code>: determines which spendables will be redeemed for a pending spend transaction and calcs helpful stats.
-
- - <code>Bitcoin.Wallet.queryOutputs()</code>: searches an output dataset.
-
- - <code>Bitcoin.Address.fromPrivOrPass()</code>: resolves a private key or brainwallet passphrase into address/pubkey/etc data structure, also makes random passphrases from user supplied or rfc1751 dictionary.
-
- - <code>Bitcoin.ImpExp.BBE.import()</code>: imports BBE/BCI JSON text data into a wallet.
-
- - <code>Bitcoin.ImpExp.BBE.export()</code>: exports wallet to BBE text.
+- New namespace <code>Bitcoin.ImpExp</code> for importing/exporting data in BBE/BCI JSON text formats to/from wallets (code adapted from <a href="http://brainwallet.org">brainwallet.org</a>).
 
 
-<h3>Some projects that use mbitcoinjs-lib</h3>
+<h3>IMPORTANT: Current bitcoin client will not allow the throwaway opcode in a multisig redemption to be anything other than OP_0.
+This older code is using OP RESERVED, so the effected code in mbitcoinjs.js should be edited (minor change).  
+In addition, the correct opcode for data/memo outs is OP_RETURN with a 40 byte maximum.</h3>
 
-  ThoughtWallet: <a href="http://thoughtwallet.github.io/wallet">http://thoughtwallet.github.io/wallet</a>
-  
-  Rarebit client: <a href="http://rarebit.github.io/project/client/min">http://rarebit.github.io/project/client/min</a>
+<h3>Doc in source</h3>
