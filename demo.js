@@ -108,7 +108,7 @@
       function showres( ) {
         var a = Bitcoin.Util.formatValue2( w.selectOutputs().avail );
         se( sn, 'avail', a );
-        se( sn, 'stat', "OK (" + (w.txCount?w.txCount:0)+ " transactions)" );
+        se( sn, 'stat', (w.txCount?w.txCount:0) + " transactions" );
       }
       var callbacks = {
         oncomplete: function() {showres();},
@@ -149,7 +149,7 @@
         val = avail.subtract( fee );
       var t = val.add( fee );
       if (avail.compareTo(BigInteger.ZERO) <= 0)
-        return se( sn, 'stat', "No balance" );
+        return se( sn, 'stat', "No balance (wallet synced?)" );
       if (t.compareTo(avail) > 0)
         return se( sn, 'stat', "Insufficient funds" );
       /*
@@ -172,6 +172,7 @@
       var json = Bitcoin.ImpExp.BBE.exportTx( tx, true ).JSON;
       var txhash = JSON.parse(json).hash;
       se( sn, 'txhash', fmttxhash(txhash) );
+      id2el( 'pushtx_JSON' ).innerHTML = json;
       /*
         broadcast the tx to the network
       */
