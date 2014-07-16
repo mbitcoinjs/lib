@@ -14,7 +14,9 @@ v0.0.2 (July 15, 2014) adds blockr.io (BIO) import, wallet sync, and push transa
 
 mbitcoinjs-lib extends the bitcoinjs-lib bitcoin/crypto javascript library; it is designed to provide its extended functions without interfering with any pre-existing code that calls into bitcoinjs-lib.
 
-- Creates transactions with multisig and data/memo outputs
+- Additions to <code>Bitcoin.Wallet</code> namespace for multisig awareness and searching output datasets.
+
+- Creates transactions with multisig and data/memo outputs.
 
 - Recognizes multisig as spendable if the required M addresses are in the wallet, signs/spends with M keys. 
     
@@ -22,7 +24,7 @@ mbitcoinjs-lib extends the bitcoinjs-lib bitcoin/crypto javascript library; it i
 
 - Namespace <code>Bitcoin.ImpExp</code> for importing/exporting data in BBE/BCI/BIO JSON text formats to/from wallets (some of this code adapted from <a href="http://brainwallet.org">brainwallet.org</a>).
 
-- <code>Bitcoin.ImpExp.Sync</code> for downloading transactions into wallets, also pushing new transactions
+- <code>Bitcoin.ImpExp.Sync</code> for downloading transactions into wallets, also new transaction broadcast
 
 
 
