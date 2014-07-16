@@ -15,7 +15,7 @@
     are in the wallet, signs/spends with M keys 
 
   Data outputs: recognizes and writes data outputs 
-    writes: OP_RESERVED <80 bytes>
+    writes: OP_RETURN <up to 40 bytes>
 
   Bitcoin.Wallet.createSend2(): new version of createSend with multisig
     and data output support, also supports multiple outputs and async mode
@@ -104,6 +104,7 @@ Bitcoin.Wallet.prototype.process2 = function( tx, unconfirmed, pruneDelay ) {
   if (!this.unspentOuts) this.unspentOuts = [];
   if (!this.exitOuts) this.exitOuts = [];
   if (!this.allOuts) this.allOuts = [];
+  if (!this.inputRefIndex) this.inputRefIndex = {};
   //  gather outputs
   for( var j=0; j<tx.outs.length; j++ ) {
     var txout = new Bitcoin.TransactionOut( tx.outs[j] );
@@ -115,6 +116,13 @@ Bitcoin.Wallet.prototype.process2 = function( tx, unconfirmed, pruneDelay ) {
       else
         this.exitOuts.push( {'tx':tx, index:j, out:txout} );
     }
+  }
+  //  add input pointers to inpRefIndex
+  for( var j=0,inp; j<tx.ins.length; j++ ) {
+    inp = tx.ins[j].outpoint;
+    if (this.inputRefIndex[inp.hash+':'+inp.index])
+      throw new Error( "Wallet contains double spends, resync needed" );
+    this.inputRefIndex[inp.hash+':'+inp.index] = {'tx':tx, index:j, in:tx.ins[j]};
   }
   //  index transaction
   this.txIndex[tx.hash] = tx;
@@ -264,12 +272,33 @@ Bitcoin.Wallet.prototype.addAddrs = function( addrs, reset ) {
   add keys to address wallet before signing new tx
 */
 Bitcoin.Wallet.prototype.resetToKeyWallet = function( keys ) {
-  this.isAddressWallet = false;
+  /*this.isAddressWallet = false;
   this.clear();
   this.savedAddressHashes = this.addressHashes;
   this.addressHashes = [];
   for( var i=0; i<keys.length; i++ )
     this.addKey( keys[i] );
+  */
+  this.savedAddressHashes = this.replaceKeys( keys );
+}
+
+
+/*
+  replace or clear keys in wallet
+    keys (optional): if provided, array of new keys
+    reprocess (optional): .reprocess() is called following key replacement 
+*/
+Bitcoin.Wallet.prototype.replaceKeys = function( keys, reprocess ) {
+  this.isAddressWallet = false;
+  this.clear();
+  var ah = this.addressHashes;
+  this.addressHashes = [];
+  if (keys)
+    for( var i=0; i<keys.length; i++ )
+      this.addKey( keys[i] );
+  if (reprocess)
+    this.reprocess();
+  return ah;
 }
 
 
@@ -349,6 +378,7 @@ Bitcoin.Wallet.prototype.queryOutputs = function( from, filters ) {
       return cmpv(o.out.value,fv) >= 0;
     if (fn == 'maxvalue')
       return cmpv(o.out.value,fv) <= 0;
+    //
     var as = o.out.script.getOutAddrs();
     if (fn == 'descr')
       return as.descr == fv;
@@ -360,6 +390,10 @@ Bitcoin.Wallet.prototype.queryOutputs = function( from, filters ) {
       var i = fn.substr( 4, fn.length-4 );
       if (as.addrs[i].toString() == fv.toString())
         return true;
+    }
+    if (fn == 'eqmemo' && as.dataText) {
+      var ofs = filters.memooffset ? filters.memooffset : 0;
+      return as.dataText.substr( ofs, fv.length ) == fv;
     }
     if (fn == 'eqM')
       return cmpn(as.m,fv) == 0;
@@ -375,7 +409,7 @@ Bitcoin.Wallet.prototype.queryOutputs = function( from, filters ) {
       return cmpn(as.addrs.length,fv) <= 0;
     if (fn == 'eqdata' && as.dataHex) {
       var ofs = filters.dataoffset ? filters.dataoffset : 0;
-      return as.dataHex.substr(ofs,fv.len) == fv;
+      return as.dataHex.substr(ofs,fv.length) == fv;
     }
     return false;
   }
@@ -385,29 +419,68 @@ Bitcoin.Wallet.prototype.queryOutputs = function( from, filters ) {
         return false;
     return true;
   }
-  function doit( outs ) {
-    for( var i=0,os; i<outs.length; i++ )
-      if (match( outs[i] )) {
-        var v = Bitcoin.Util.valueToBigInt( outs[i].out.value );
-        var as = outs[i].out.script.getOutAddrs();
-        ret.outsStats.push( 
+  function okout( out ) {
+    var v = Bitcoin.Util.valueToBigInt( out.out.value );
+    var as = out.out.script.getOutAddrs();
+    ret.outsStats.push( 
                  { value:v,
-                   txHash:outs[i].tx.hash,
-                   index:outs[i].index,
+                   txHash:out.tx.hash,
+                   index:out.index,
+                   date:out.tx.timestamp,
                    descr:as.descr,
                    N:as.addrs.length,
                    M:as.m,
                    addrs:as.addrs,
-                   'unconfirmed':outs[i].tx.unconfirmed,
-                   tx:outs[i].tx, 
-                   data:as.dataHex?as.dataHex:"" } );
-        if (outs[i].tx.unconfirmed)
-          ret.unconfirmed.add( v );
-      }
+                   'unconfirmed':out.tx.unconfirmed,
+                   tx:out.tx, 
+                   data:as.dataHex?as.dataHex:"",
+                   memo:as.dataText?as.dataText:"" } );
+    if (out.tx.unconfirmed)
+      ret.unconfirmed.add( v );
   }
-  if (this[from])
-    doit( this[from] );
+  function doout( out ) {
+    if (match( out ))
+      okout( out );
+  }
+  function doit( outs ) {
+    for( var i=0; i<outs.length; i++ )
+      doout( outs[i] );
+  }
+  //  optimization: go directly to tx if possible
+  if (from == 'allOuts' && filters.txHash) {
+    var tx = this.txIndex[filters.txHash];
+    if (tx)
+      if (filters.index != undefined) {
+        if (filters.index >= 0 && filters.index < tx.outs.length)
+          doout( {out:tx.outs[filters.index], 'tx':tx, index:filters.index} );
+      }
+      else
+        for( var i=0; i<tx.outs.length; i++ )
+          doout( {out:tx.outs[i], 'tx':tx, index:i} );
+  }
+  else
+    if (this[from])
+      doit( this[from] );
   return ret;
+}
+
+
+/*
+  get info about output (see .queryOutputs)
+*/
+Bitcoin.Wallet.prototype.getOutputStats = function( txhash, indx ) {
+  var s = this.queryOutputs( 'allOuts', {txHash:txhash, index:indx } );
+  return s ? s.outsStats[0] : null;
+}
+
+
+/*
+  determine if output is known spent (pruned)
+*/
+Bitcoin.Wallet.prototype.isOutputPruned = function( txhash, index ) {
+  if (this.prunedOutsIndex[txhash+':'+index])
+    return true;
+  return false;
 }
 
 
@@ -454,7 +527,7 @@ Bitcoin.Wallet.prototype.queryInputs = function( filter ) {
         return false;
     return true;
   }
-  var res = [], only1poss=false;
+  var res = [];
   function doinp( h, inp, tx ) {
     if (match( h, inp )) {
       var inst = inp.script.getInAddrs();
@@ -465,23 +538,27 @@ Bitcoin.Wallet.prototype.queryInputs = function( filter ) {
                  addrs:inst.addrs,
                  pubs:inst.pubs,
                  'tx':tx } );
-      if (only1poss)
-        return 1;
+      return true;
     }
   }
+  var only1poss = false;
   function dotx( h, tx ) {
     for( var j=0; j<tx.ins.length; j++ )
       if (doinp( h, tx.ins[j], tx ))
         if (only1poss)
-          return 1;
+          return true;
   }
-  //  optimization: if filter is looking for a ref to a
-  //       particular tx&index, only 1 match is possible
-  only1poss = filter.refTxHash && filter.refTxIndex;
-  for( var h in this.txIndex )
-    if (dotx( h, this.txIndex[h] ))
-      if (only1poss)
-        break;
+  //  optimization: if looking for a particular inp ref, use index to get it
+  if (filter.refTxHash && filter.refTxIndex != undefined) {
+    var ri = this.inputRefIndex[filter.refTxHash+':'+filter.refTxIndex];
+    if (ri)
+      doinp( ri.tx.hash, ri.in, ri.tx );
+  }
+  else
+    for( var h in this.txIndex )
+      if (dotx( h, this.txIndex[h] ))
+        if (only1poss)
+          break;
   return res;
 }
 
@@ -491,8 +568,9 @@ Bitcoin.Wallet.prototype.queryInputs = function( filter ) {
 */
 Bitcoin.Wallet.prototype.reprocess = function( ) {
   var txi = this.txIndex;
-  this.txIndex = {}; this.unspentOuts = [];
-  this.exitOuts = []; this.prunedOuts = []; this.allOuts = [];
+  this.txIndex = {}; this.allOuts = []; this.unspentOuts = [];
+  this.exitOuts = []; this.prunedOuts = []; 
+  this.prunedOutsIndex = {}; this.inputRefIndex = {};
   this.txCount = 0;
   for( var h in txi )
     this.process2( txi[h], txi[h].unconfirmed, true );
@@ -624,7 +702,7 @@ Bitcoin.Wallet.prototype.createInputSig = function( txhash, addr, hashType ) {
 
 /*
   create a signed input script for a new spend tx w multisig support, 
-    (multisig writes:  OP_RESERVED <sig> <sig> ...)
+    (multisig writes:  OP_0 <sig> <sig> ...)
 */
 Bitcoin.Wallet.prototype.createInputScript = function( sendTx, conScr, i ) {
   var newScr = new Bitcoin.Script();
@@ -632,7 +710,7 @@ Bitcoin.Wallet.prototype.createInputScript = function( sendTx, conScr, i ) {
   var txhash = sendTx.hashTransactionForSignature( conScr, i, hashType );
   var a = conScr.getOutAddrs();
   if (a.descr == 'Multisig')
-    newScr.writeOp( Bitcoin.Opcode.map.OP_RESERVED );
+    newScr.writeOp( Bitcoin.Opcode.map.OP_0 );
   for( var j=0,m=0,sig; j<a.addrs.length && m<a.m; j++ ) {
     sig = this.createInputSig( txhash, a.addrs[j], hashType );
     if (sig) {
@@ -673,16 +751,18 @@ Bitcoin.Wallet.prototype.pruneSpentOutputs = function() {
     var nouts = [];
     for( var i=0,uo,inp; i<outs.length; i++ ) {
       uo = outs[i];
-      inp = w.queryInputs( {refTxHash:uo.tx.hash,refTxIndex:uo.index} );
-      if (inp.length > 0)
-        w.prunedOuts.push( uo );
+      //inp = w.queryInputs( {refTxHash:uo.tx.hash,refTxIndex:uo.index} );
+      //if (inp.length > 0)
+      // (make this faster)
+      if (w.inputRefIndex[uo.tx.hash+':'+uo.index])
+        w.prunedOuts.push( uo ), w.prunedOutsIndex[uo.tx.hash+':'+uo.index] = uo;
       else
         nouts.push( uo );
     }
     return nouts;
   }
   var w = this;
-  if (!this.prunedOuts) this.prunedOuts = [];
+  if (!this.prunedOuts) this.prunedOuts = [], this.prunedOutsIndex = {};
   this.unspentOuts = _prune( this.unspentOuts );
   this.exitOuts = _prune( this.exitOuts );
 }
@@ -703,6 +783,14 @@ Bitcoin.Wallet.prototype.findPubKeys = function( addrs ) {
 
 
 /*
+  get tx from hash
+*/
+Bitcoin.Wallet.prototype.getTx = function( txh ) {
+  return this.txIndex[txh];
+}
+
+
+/*
   Bitcoin.Script extensions
   -------------------------
 */
@@ -712,7 +800,8 @@ Bitcoin.Wallet.prototype.findPubKeys = function( addrs ) {
     returns {descr:      'Address'|'Multisig'|'Pubkey'|'Data',
              addrs:[],   addrs in multisig, addrs[0] is pay to addr if std out
              m:<M>,      M from multisig or 1 if std out
-             dataHex:<>} if 'Data', hex string of data
+             dataHex:<>, if 'Data', hex string of data
+             dataText:<>} if 'Data', text of data
 */
 Bitcoin.Script.prototype.getOutAddrs = function() {
   var ret = {descr:this.getOutType(),addrs:[],addrstrs:[],m:1};
@@ -738,6 +827,7 @@ Bitcoin.Script.prototype.getOutAddrs = function() {
       break;
     case 'Data':
       ret.dataHex = Crypto.util.bytesToHex( this.chunks[1] );
+      ret.dataText = Bitcoin.Util.bytesToString( this.chunks[1] );
       ret.m = 0;
       break;
     default:
@@ -779,14 +869,14 @@ Bitcoin.Script.prototype.getInAddrs = function () {
 }
 
 
-/* 
+/*
   override of getOutType in bitcoinjs (script.js),
     patch for detecting properly formed multisig, also support for 'Data'
 */
 Bitcoin.Script.prototype.getOutType__ = Bitcoin.Script.prototype.getOutType;
 Bitcoin.Script.prototype.getOutType = function () {
   var l = this.chunks.length;
-  if (l == 2 && this.chunks[0] == Bitcoin.Opcode.map.OP_RESERVED)
+  if (l == 2 && this.chunks[0] == Bitcoin.Opcode.map.OP_RETURN)
     return 'Data';
   else
     if (l >= 4)
@@ -803,27 +893,31 @@ Bitcoin.Script.prototype.getOutType = function () {
 
 
 /*
-  Create a data output script, OP_RESERVED <data (80 bytes)>
+  Create a data output script, OP_RETURN <data (up to 40 bytes)>
 */
 Bitcoin.Script.createDataOutputScript = function( Data ) {
   if (typeof(Data) == 'string')
     Data = Crypto.util.hexToBytes( Data );
   else
-    if (Data.memo) {
-      var stringToBytes = function( str ) {
-        for( var bytes=[],i=0; i<str.length; i++ )
-          bytes.push( str.charCodeAt(i) );
-        return bytes;
-      }
-      Data = stringToBytes( Data.memo );
-    }
+    if (Data.memo)
+      Data = Bitcoin.Util.stringToBytes( Data.memo );
   var script = new Bitcoin.Script();
-  script.writeOp( Bitcoin.Opcode.map.OP_RESERVED );
-  //while (Data.length < 80) Data.push( 0 );
-  if (Data.length > 80)
-    throw new Error( "Data output length exceeds 80 bytes" );
+  script.writeOp( Bitcoin.Opcode.map.OP_RETURN );
+  //while (Data.length < 40) Data.push( 0 );
+  if (Data.length > 40)
+    throw new Error( "Data output exceeds 40 bytes" );
   script.writeBytes( Data );
   return script;
+}
+Bitcoin.Util.stringToBytes = function( str ) {
+  for( var bytes=[],i=0; i<str.length; i++ )
+    bytes.push( str.charCodeAt(i) );
+  return bytes;
+}
+Bitcoin.Util.bytesToString = function( bytes ) {
+  for( var str="",i=0; i<bytes.length; i++ )
+    str += String.fromCharCode( bytes[i] );
+  return str;
 }
 
 
@@ -837,13 +931,13 @@ Bitcoin.Script.createDataOutputScript = function( Data ) {
     { value:<BigInteger>|<float string>, 
       "Address": <addr> | <std str> 
       [or] "Multisig": { pubkeys:[], M:<M of N> }
-      [or] "Data": <bytearr or hex str (80 bytes)> }
+      [or] "Data": <bytearr or hex str (40 bytes max)> }
   if "Address" defined, creates std pay output to Address
   if "Multisig" defined, Multisig.pubkeys[] are the N keys
        and M is Multisig.M, each pubkey is <pubkey> | <hex string> 
     writes:  OP_<M> <pubkey>...<pubkey> OP_<N> OP_CHECKMULTISIG
   if "Data" defined, creates data output
-    writes:  OP_RESERVED <data>
+    writes:  OP_RETURN <data>
     if Data.memo defined, Data.memo is a char string
 */
 Bitcoin.Transaction.prototype.addOutput2 = function( sendTo ) {
