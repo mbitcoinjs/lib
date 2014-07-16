@@ -3,10 +3,11 @@ mbitcoinjs-lib
 
 v0.0.2 (July 15, 2014) adds blockr.io (BIO) import, wallet sync, and push transaction capabilities.  Some important fixes as well.
 
-See demo page: <a href="http://mbitcoinjs.github.io/lib">http://mbitcoinjs.github.io/lib</a>
+
+<h5>See demo page: <a href="http://mbitcoinjs.github.io/lib">http://mbitcoinjs.github.io/lib</a></h5>
 
 
-ABOUT mbitcoinjs-lib
+<h4>ABOUT mbitcoinjs-lib</h4>
 
  - Extensions to bitcoinjs-lib for multi-signature, data/memo outputs, brainwallet passphrases, JSON import/export, network sync
  - v0.0.2, inherits bitcoinjs-lib license
