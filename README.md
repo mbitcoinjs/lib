@@ -4,7 +4,7 @@ mbitcoinjs-lib
 v0.0.2 (July 15, 2014) adds blockr.io (BIO) import, wallet sync, and push transaction capabilities.  Some important fixes as well.
 
 
-<h5>Demo page: <a href="http://mbitcoinjs.github.io/lib">http://mbitcoinjs.github.io/lib</a></h5>
+<h5>Demo page: <a href="http://mbitcoinjs.github.io/lib/demo.html">http://mbitcoinjs.github.io/lib/demo.html</a></h5>
 
 
 <h4>About mbitcoinjs-lib</h4>
