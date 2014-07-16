@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>mbitcoinjs-lib Demo</title>
+  <meta content="mbitcoinjs Demo and Tests" name="description">
+  <meta content="mbitcoinjs" name="author">
+
+  <style>
+    body {
+      margin:0; padding:0; padding-left:3em;
+      font-family:"Open Sans",sans-serif; font-size:110%; color:#555;
+    }
+    p, .p {margin-bottom:6em;}
+    .p {border-top:1px solid #bbb; padding-top:0.3em;}
+    textarea {width:100%;}
+    a {border-bottom:1px solid #d8d8d8; text-decoration:none; color:#25c;}
+    a:hover {border-color:#25c;}
+    a:visited {color:gray;}
+    .content { padding:0.5em 3em; display:block; }
+    .toggle {display:none;}
+    .noborder {border:0;}
+    .responseframe {height:8em; width:100%;}
+    .box { border:1px solid #ccc; background-color:#eef; padding:1em 1em;}
+    .title {font-size:140%; font-weight:500;}
+    .hd {font-size:120%; font-weight:500;}
+    .faqq {font-size:110%; font-weight:600;}
+    .f1 {font-family:"lucida console",monospace;}
+    .tt {font-family:"courier new",monospace;}
+    .b {font-weight:600;}
+    .lt {color:#888;}
+    .med {font-size:95%;}
+    .small {font-size:85%;}
+    .smaller {font-size:75%;}
+    .label {font-size:75%;}
+    .verysmall {font-size:60%;}
+    .oneline {display:inline-block; white-space:nowrap;}
+    .right {text-align:right;}
+    .indent {margin-left:2.5em; margin-bottom:1em; display:inline-block;}
+    .stat, .val {color:#5b5;}
+    .key {color:#b55;}
+    .addr {color:#55b;}
+    .fun {font-size:80%; margin-left:2.5em;}
+    .val {font-size:110%;}
+  </style>
+
+  <script src="extern/bitcoinjs-min.js"></script>
+  <script src="rfc1751.js"></script>
+  <script src="mbitcoinjs.js"></script>
+  <script src="impexp.js"></script>
+  <script src="demo.js"></script>
+</head>
+
+<body>
+
+
+<div class="content">
+
+
+<br/>
+<br/>
+
+
+<br/>
+<span class="title">
+  <span class="f1">mbitcoinjs-lib</span> Demo</span>
+
+
+</div><div class="content">
+
+<br/>
+
+<p class="med">
+This page demonstrates 
+<a href="https://github.com/mbitcoinjs" class=""><span 
+class="f1">mbitcoinjs-lib</span></a>
+(<a href="mbitcoinjs.js">doc1</a>, 
+<a href="impexp.js">doc2</a>), 
+an extension 
+library for <span class="f1">bitcoinjs-lib</span>.  
+The extension adds multisig aware wallets,
+JSON transaction import/export, network sync, and transaction
+broadcast capabilities. 
+<br/>
+<br/>
+The extension operates in the browser on the client-side,
+i.e., there are no server compenents to install nor do users
+need to be running <span class="f1">bitcoind</span>.
+The extension's network functions pull from and push to
+<span class="f1">blockr.io</span>,
+<span class="f1">blockexplorer.com</span>, or
+<span class="f1">blockchain.info</span>
+(this demo uses <span class="f1">blockr.io</span>, the default).
+<br/>
+<br/>
+This demo gets and posts to TestNet.  
+As of this writing, network functions have only been tested on Firefox.  Fee = 0.00001.
+</p>
+
+
+</div><div class="content">
+
+
+
+<div class="p">
+<span class="hd">1. Create a Wallet (wallet1)</span>
+<br/>
+<span class="tt fun">key1 = Bitcoin.Address.fromPrivOrPass( entry )</span>
+<br/>
+<span class="tt fun">wallet1 = new Bitcoin.Wallet()</span>
+<br/>
+<span class="tt fun">wallet1.addKeys( [key1.ecKey] )</span>
+<br/>
+<br/>
+<span class="small">Passphrase or private key: </span>
+<br/>
+<textarea id="s1_pass"></textarea>
+<br/>
+<button onclick="create1(id2el('s1_pass').value);">CREATE WALLET FROM ENTRY</button>
+<button onclick="create1();">CREATE WALLET (RANDOM KEY)</button>
+<div class="toggle" id="s1_toggle">
+<br/>
+<br/>
+<span class="label">Address: </span><span class="f1 addr" id="s1_addr"></span><br/>
+<span class="label">Address in TestNet: </span><span class="f1 addr"
+                                                    id="s1_addrtestnet"></span><br/>
+<span class="label">Bitcoin Key: </span><span class="f1 key" id="s1_key"></span>
+<br/>
+<br/>
+<span class="small">Use faucet to add funding if needed: </span>
+<a href="http://faucet.xeno-genesis.com/" target=_blank>http://faucet.xeno-genesis.com</a> 
+<br/>
+<br/>
+<button onclick="sync1();">SYNC TO NETWORK (GET UNSPENTS)</button>
+<br/>
+<span class="tt fun">Bitcoin.ImpExp.Sync.loadAddrs( wallet1 )</span>
+<br/>
+<span class="tt fun">balance1 = wallet1.selectOutputs().avail</span>
+<br/>
+<br/>
+<span class="label">Balance: </span><span class="f1 val" id="s1_avail"></span>
+<br/>
+<span class="stat" id="s1_stat"></span><br/>
+</div>
+</div>
+
+
+
+
+
+<div class="p">
+<span class="hd">2. Create Three Random Key Pairs for Escrow</span>
+<br/>
+<span class="tt fun">escrowKey1 = Bitcoin.Address.fromPrivOrPass()</span>
+<br/>
+<span class="tt fun">escrowKey2 = Bitcoin.Address.fromPrivOrPass()</span>
+<br/>
+<span class="tt fun">escrowKey3 = Bitcoin.Address.fromPrivOrPass()</span>
+<br/>
+<br/>
+<button onclick="do2();">CREATE ESCROW KEYPAIRS</button>
+<div class="toggle" id="s2_toggle">
+<br/>
+<br/>
+<span class="label">Address 1: </span><span class="f1 addr" id="s2_1_addr"></span><br/>
+<span class="label">Address in TestNet: </span><span class="f1 addr" id="s2_1_addrtestnet"></span><br/>
+<span class="label">Key: </span><span class="f1 key" id="s2_1_key"></span>
+<br/>
+<br/>
+<span class="label">Address 2: </span><span class="f1 addr" id="s2_2_addr"></span><br/>
+<span class="label">Address in TestNet: </span><span class="f1 addr" id="s2_2_addrtestnet"></span><br/>
+<span class="label">Key: </span><span class="f1 key" id="s2_2_key"></span>
+<br/>
+<br/>
+<span class="label">Address 3: </span><span class="f1 addr" id="s2_3_addr"></span><br/>
+<span class="label">Address in TestNet: </span><span class="f1 addr" id="s2_3_addrtestnet"></span><br/>
+<span class="label">Key: </span><span class="f1 key" id="s2_3_key"></span>
+</div>
+</div>
+
+
+
+<div class="p">
+<span class="hd">3. Spend Funds from wallet1 to Escrow Transaction (2 of 3)</span>
+<br/>
+<span class="tt fun">tx = wallet1.createSend2( [{value:entry, Multisig:{M:2,pubkeys:[escrowKey1.pub,escrowKey2.pub,escrowKey3.pub]}}], chgto, fee )</span>
+<br/>
+<span class="tt fun">Bitcoin.ImpExp.Sync.sendNewTx( tx )</span>
+<br/>
+<br/>
+<span class="med">Amount to spend: </span><input type="number" id="s3_val"/><br/>
+<span class="small"> &nbsp; change is returned to key1.address, leave blank to spend all</span>
+<br/>
+<br/>
+<button onclick="do3();">SIGN/SEND TRANSACTION</button>
+<div class="toggle" id="s3_toggle">
+<br/>
+<br/>
+<span class="stat" id="s3_stat"></span><br/>
+<span class="f1 txhash" id="s3_txhash"></span>
+</div>
+</div>
+
+
+
+<div class="p">
+<span class="hd">4. Create Multisig Aware Wallet with 2 of the Escrow Keys</span>
+<br/>
+<span class="tt fun">wallet2 = new Bitcoin.Wallet()</span>
+<br/>
+<span class="tt fun">wallet2.addKeys( [escrowKey1.ecKey, escrowKey3.ecKey] )</span>
+<br/>
+<br/>
+<button onclick="create4();">CREATE SECOND WALLET</button>
+<div class="toggle" id="s4_toggle">
+<br/>
+<br/>
+<button onclick="sync4();">SYNC TO NETWORK (GET UNSPENT ESCROW)</button>
+<br/>
+<span class="tt fun">Bitcoin.ImpExp.Sync.loadAddrs( wallet2 )</span>
+<br/>
+<span class="tt fun">balance2 = wallet2.selectOutputs().avail</span>
+<br/>
+<br/>
+<span class="label">Balance: </span><span class="f1 val" id="s4_avail"></span>
+<br/>
+<span class="stat" id="s4_stat"></span><br/>
+</div>
+</div>
+
+
+
+<div class="p">
+<span class="hd">5. Redeem Escrow Output in wallet2 Back to wallet1</span>
+<br/>
+<span class="tt fun">tx = wallet2.createSend2( [{value:balance2-fee,Address:key1.addr}], chgto, fee )</span>
+<br/>
+<span class="tt fun">Bitcoin.ImpExp.Sync.sendNewTx( tx )</span>
+<br/>
+<br/>
+<button onclick="do5();">SIGN/SEND REDEMPTION TRANSACTION</button>
+<div class="toggle" id="s5_toggle">
+<br/>
+<br/>
+<span class="stat" id="s5_stat"></span><br/>
+<span class="f1 txhash" id="s5_txhash"></span>
+</div>
+</div>
+
+
+
+
+  <!-- HIDDEN FORM USED TO SUBMIT TXs -->
+  <div style="display:none;">
+    <form action="to_be_set" method="post" target="pushtx_result" id="pushtx_form">
+      <textarea id="pushtx_hex"></textarea>
+    </form>
+  </div>
+
+
+<span class="small">Response from most recent transaction broadcast:</span>
+<iframe name="pushtx_result" src="" id="pushtx_result" class="responseframe noborder">
+</iframe>
+
+
+</div></span></body>
+</html>
+
+
