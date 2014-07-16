@@ -3,7 +3,9 @@ mbitcoinjs-lib
 
 v0.0.2 (July 15, 2014) adds JSON import from blockr.io (BIO), wallet sync, and push transaction capabilities.
 
-Note that this extension is for the original bitcoinjs-lib version 0.1.3 (provided in the extern subdir).  Most of the Javascript bitcoin projects in production use the original bitcoinjs-lib (the original has been stable and widely used for a few years).
+Note that this extension is for the original bitcoinjs-lib version 0.1.3 (provided in the extern subdir).  Most of the Javascript bitcoin projects in production use the original lib (the original has been stable and widely used for a few years).
+
+The new network functions do not require server compenents be installed or that users run bitcoind. The network functions connect to and pull data from blockr.io, blockexplorer.com, or blockchain.info. blockr.io is the default since its address API returns multi-signature transactions that contain the target address (multisig aware wallets can be built and populated with unspent output data very easily - see demo).
 
 Demo page: <b><a href="http://mbitcoinjs.github.io/lib/demo.html">http://mbitcoinjs.github.io/lib/demo.html</a></b>
 
