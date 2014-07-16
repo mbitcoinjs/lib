@@ -5,7 +5,7 @@ v0.0.2 (July 15, 2014) adds JSON import from blockr.io (BIO), wallet sync, and p
 
 Note that this extension is for the original bitcoinjs-lib version 0.1.3 (provided in the extern subdir).  Most of the Javascript bitcoin projects in production use the original bitcoinjs-lib (the original has been stable and widely used for a few years).
 
-Demo page: <a href="http://mbitcoinjs.github.io/lib/demo.html">http://mbitcoinjs.github.io/lib/demo.html</a>
+Demo page: <h5><a href="http://mbitcoinjs.github.io/lib/demo.html">http://mbitcoinjs.github.io/lib/demo.html</a></h5>
 
 
 <h4>About mbitcoinjs-lib</h4>
