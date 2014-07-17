@@ -5,7 +5,7 @@ v0.0.2 (July 15, 2014) adds JSON import from blockr.io (BIO), wallet sync, and p
 
 Note that this extension is designed for the original bitcoinjs-lib (0.1.3), which has been in post-development and in wide use for a few years (provided in extern subdir). 
 
-The new network functions do not require server compenents be installed or that users run bitcoind. The network functions connect to and pull data from blockr.io, blockexplorer.com, or blockchain.info. blockr.io is the default since its address API returns multi-signature transactions that contain the target address (multisig aware wallets can be built and populated with unspent output data very easily - see demo).
+The network functions do not require server compenents be installed or that users run bitcoind. The network functions connect to and pull data from blockr.io, blockexplorer.com, or blockchain.info. blockr.io is the default since its address API returns multi-signature transactions that contain the target address (multisig aware wallets can be built and populated with unspent output data very easily - see demo).
 
 Demo page: <b><a href="http://mbitcoinjs.github.io/lib/demo.html">http://mbitcoinjs.github.io/lib/demo.html</a></b>
 
@@ -36,6 +36,6 @@ mbitcoinjs-lib extends the bitcoinjs-lib v0.1.3 bitcoin/crypto javascript librar
 
 Some projects that use this extension: 
 
-<a href="http://rarebit.github.io/project/client/web1">Rarebit web client</a>
+<a href="http://rarebit.github.io/project/">Rarebit web client</a>
 
 <a href="http://thoughtwallet.github.io/wallet/">ThoughtWallet</a> (uses v0.0.1 alpha)
