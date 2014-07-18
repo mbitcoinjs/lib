@@ -17,6 +17,7 @@
     var escrowKeys = null;
     var wallet1 = null;
     var wallet2 = null;
+    var syncNeeded = false;
     var demoKey = '5J4vkjzRBeKztsWXQjgJ9v8iRepDWxAPqX69SnPmAJDD5Ujq5Vr';
 
     function create1( pass ) { 
@@ -25,7 +26,7 @@
       if (key1[0].pass)
         id2el('s1_pass').value = key1[0].pass;
     }
-    function sync1() {syncWallet( '1', wallet1, key1 );}
+    function sync1( re ) {syncWallet( '1', wallet1, key1, (!re && wallet2)?sync4:null );}
 
     function do2() { escrowKeys = createKeys( '2' ); }
 
@@ -36,7 +37,7 @@
         do2();
       wallet2 = createWallet( '4', [escrowKeys[2].ecKey, escrowKeys[0].ecKey] );
     }
-    function sync4() {syncWallet( '4', wallet2, escrowKeys );}
+    function sync4( re ) {syncWallet( '4', wallet2, escrowKeys, (!re && wallet1)?sync1:null );}
 
     function do5() { sendTx( '5', wallet2, key1 ); }
 
@@ -98,7 +99,7 @@
 /*
     sync a wallet to network
 */
-    function syncWallet( sn, w, keys ) {
+    function syncWallet( sn, w, keys, onok ) {
       if (!w)
         return se( sn, 'stat', "Create wallet first" );
       /*
@@ -106,9 +107,12 @@
       */
       var n = '';
       function showres( ) {
+        syncNeeded = false;
         var a = Bitcoin.Util.formatValue2( w.selectOutputs().avail );
         se( sn, 'avail', a );
-        se( sn, 'stat', (w.txCount?w.txCount:0) + " transactions" );
+        se( sn, 'stat', (w.txCount?w.txCount:0) + " transactions, " + 
+                        (w.unspentOuts?w.unspentOuts.length:0) + " unspent outputs" );
+        if (onok) onok( true );
       }
       var callbacks = {
         oncomplete: function() {showres();},
@@ -125,6 +129,7 @@
             callbacks.onerror( "Unconfirmed transactions, wait to resync" );
         }
       }
+      syncNeeded = true;
       Bitcoin.ImpExp.Sync.testUnconfirmed( unccallbacks, getKeyAddrs(keys), testNet );
       return w;
     }
@@ -134,10 +139,13 @@
     build and send a transaction
 */
     function sendTx( sn, w, toKeys, val ) {
+      se( sn, 'txhash', "" );
       if (!w || !key1)
         return se( sn, 'stat', "Create wallet first" );
       if (!toKeys)
         return se( sn, 'stat', "Create keys first" );
+      if (syncNeeded)
+        return se( sn, 'stat', "Resync needed" );
       /*
         determine amt to spend
       */
@@ -177,7 +185,7 @@
         broadcast the tx to the network
       */
       var callbacks = {
-        oncomplete: function() {se( sn, 'stat', "Transaction sent" );},
+        oncomplete: function() {se( sn, 'stat', "Transaction sent" ); syncNeeded=true;},
         onerror: function(e) {se( sn, 'stat', e );}
       }
       se( sn, 'stat', "Sending transaction..." );
