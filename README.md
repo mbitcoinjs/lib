@@ -4,6 +4,8 @@ mbitcoinjs-lib
 
 mbitcoinjs-lib extends the bitcoinjs-lib 0.1.3 bitcoin/crypto javascript library; it is designed to provide its extended functions without interfering with any pre-existing code that calls into bitcoinjs-lib.  The extension inherits the bitcoinjs-lib 0.1.3 license - refer to bitconjs-min.js in extern subdir.
 
+Demo page: <b><a href="http://mbitcoinjs.github.io/lib/demo.html">http://mbitcoinjs.github.io/lib/demo.html</a></b>
+
 
 <h4>Overview</h4>
 
@@ -19,7 +21,6 @@ mbitcoinjs-lib extends the bitcoinjs-lib 0.1.3 bitcoin/crypto javascript library
 
 - <code>Bitcoin.ImpExp.Sync</code> for downloading JSON data into wallets, also transaction broadcast.
 
-Demo page: <b><a href="http://mbitcoinjs.github.io/lib/demo.html">http://mbitcoinjs.github.io/lib/demo.html</a></b>
 
 The network functions do not require server compenents be installed or that users run bitcoind. The network functions connect to and pull data from blockr.io (BIO), blockexplorer.com (BBE), or blockchain.info (BCI).  BIO is the default since its address API returns multi-signature transactions that contain the target address (see demo for an example of a multisig wallet).
 
