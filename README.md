@@ -4,7 +4,7 @@ mbitcoinjs-lib
 v0.0.3 (July 1, 2015)
 
 
-mbitcoinjs-lib extends the bitcoinjs-lib 0.1.3 bitcoin/crypto javascript library.  Inherits the bitcoinjs-lib 0.1.3 license (refer to bitconjs-min.js in extern subdir).
+mbitcoinjs-lib extends the bitcoinjs-lib 0.1.3 bitcoin/crypto javascript library (inherits license - refer to bitconjs-min.js in extern subdir).
 
 Demo page: <b><a href="http://mbitcoinjs.github.io/lib/demo.html">http://mbitcoinjs.github.io/lib/demo.html</a></b>
 
