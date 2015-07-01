@@ -12,9 +12,10 @@
 //  status = Bitcoin.ImpExp.BBE.export( wallet )
 //    status: {text:<JSON>,txsRejected:<>,txsAccepted:<>}
 //
+//Sync - connects to server (default BIO) and loads data into wallet
+//
 //  Bitcoin.ImpExp.Sync.loadAddrs( wallet, callbacks, addresses, testnet )
 //  Bitcoin.ImpExp.Sync.loadTxs( wallet, callbacks, txs, testnet )
-//    connects to server (default BIO) and loads data into wallet
 //
 //
 Bitcoin.ImpExp = {BCI:{},BBE:{},BIO:{}};
@@ -23,9 +24,6 @@ Bitcoin.ImpExp.BCI.unspentsURL = "http://blockchain.info/unspent?address=";
 Bitcoin.ImpExp.BBE.addrURL = 'http://blockexplorer.com/q/mytransactions/';
 Bitcoin.ImpExp.BBE.txURL = 'http://blockexplorer.com/rawtx/';
 Bitcoin.ImpExp.BBE.txURL_testnet = 'http://blockexplorer.com/testnet/rawtx/';
-//
-//  (as of this writing, Blockr.io has the most complete APIs;
-//   they are also not impeded by CORS restrictions)
 //
 Bitcoin.ImpExp.BIO.addrURL =         'https://btc.blockr.io/api/v1/address/txs/';
 Bitcoin.ImpExp.BIO.addrURL_testnet = 'https://tbtc.blockr.io/api/v1/address/txs/';
@@ -413,7 +411,7 @@ Bitcoin.ImpExp.BBE.export = function( wallet, onProgress ) {
 
 ///////////////////////////////////////////////////////////////
 /*
-  Loader, connects, downloads transactions, adds them to wallet
+  Loader- downloads transactions and adds them to wallet
     addresses: if provided, addresses to load for, otherwise all 
                addresses in wallet
     txs: list of tx hashes to load
@@ -428,13 +426,13 @@ Bitcoin.ImpExp.Sync = {};
 Bitcoin.ImpExp.Sync.URLs = {
   addr: Bitcoin.ImpExp.BIO.addrURL,
   uncaddr: Bitcoin.ImpExp.BIO.uncaddrURL,
-  addruseYAPI: false,
+  addruseYAPI: true,
   unc: {typ:'JSON',list:'data.unconfirmed',hash:'tx'},
   txsummaries: {typ:'JSON',list:'data.txs',hash:'tx'},
   // BIO address API returns master list with tx summaries
   //    {data: {txs:[ {tx:<hash>} ]} }
   //tx: Bitcoin.ImpExp.BBE.txURL,
-  //txuseYAPI: true,
+  txuseYAPI: true,
   tx: Bitcoin.ImpExp.BIO.txURL,
   post: Bitcoin.ImpExp.BIO.sendURL,
   postparam: 'hex',
@@ -444,11 +442,11 @@ Bitcoin.ImpExp.Sync.URLs = {
 Bitcoin.ImpExp.Sync.URLs_testnet = {
   addr: Bitcoin.ImpExp.BIO.addrURL_testnet,
   uncaddr: Bitcoin.ImpExp.BIO.uncaddrURL_testnet,
-  addruseYAPI: false,
+  addruseYAPI: true,
   txsummaries: {typ:'JSON',list:'data.txs',hash:'tx'},
   unc: {typ:'JSON',list:'data.unconfirmed',hash:'tx'},
   //tx: Bitcoin.ImpExp.BBE.txURL_testnet,
-  //txuseYAPI: true,
+  txuseYAPI: true,
   tx: Bitcoin.ImpExp.BIO.txURL_testnet,
   post: Bitcoin.ImpExp.BIO.sendURL_testnet,
   postparam: 'hex',
@@ -820,7 +818,7 @@ Bitcoin.ImpExp.Sync.loadURL = function( callbacks, url, useYAPI ) {
 
 
 /*
-  load a url, get text (uses YAPI to bypass CORS restrictions)
+  load a url, get text response (uses YAPI to bypass CORS restrictions)
 */
 Bitcoin.ImpExp.Sync.loadURL_YAPI = function( callbacks, url ) {
   function uniqueURL( url ) {
@@ -830,15 +828,22 @@ Bitcoin.ImpExp.Sync.loadURL_YAPI = function( callbacks, url ) {
     url += cd.getTime().toString();
     return url;
   }
-  function transferComplete( t, s ) {
+  function extract( t, starttag, endtag ) {
     // extract result from yapi
-    var i1 = t.indexOf( "<p>" );
-    var i2 = t.indexOf( "</p>" );
+    var i1 = t.indexOf( starttag );
+    var i2 = t.indexOf( endtag );
     if (i1 < 0 || i2 < 0)
+      return null;
+    i1 += starttag.length;
+    return t.substr( i1, i2-i1 );
+  }
+  function transferComplete( t, s ) {
+    t = extract( t, "<body>", "</body>" );
+    if (!t)
       if (callbacks._onerror)
-        return callbacks._onerror( "Invalid response" );
-    i1 += 3;
-    var t = t.substr( i1, i2-i1 );
+        return callbacks._onerror( "Server busy" );
+    var t2 = extract( t, "<p>", "</p>" );
+    if (t2) t = t2;
     if (callbacks.ontextloaded)
       callbacks.ontextloaded( t );
   }
