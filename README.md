@@ -6,6 +6,8 @@ v0.0.3 (July 1, 2015)
 
 mbitcoinjs-lib extends the bitcoinjs-lib 0.1.3 bitcoin/crypto javascript library (bitconjs-min.js in extern subdir).
 
+The extension adds multisig aware wallets, JSON transaction import/export, network sync, and transaction broadcast capabilities.
+
 Demo page: <b><a href="http://mbitcoinjs.github.io/lib/demo.html">http://mbitcoinjs.github.io/lib/demo.html</a></b>
 
 
